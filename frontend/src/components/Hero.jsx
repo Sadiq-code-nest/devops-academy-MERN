@@ -1,18 +1,17 @@
 import { useEffect } from 'react';
 
 const tools = [
-  { emoji: '🐧', label: 'Linux' },
-  { emoji: '🌿', label: 'Git & GitHub' },
-  { emoji: '🐳', label: 'Docker' },
-  { emoji: '⚙️', label: 'Jenkins' },
-  { emoji: '☁️', label: 'AWS' },
-  { emoji: '🏗️', label: 'Terraform' },
-  { emoji: '📦', label: 'Ansible' },
-  { emoji: '🔒', label: 'Nginx' },
+  { emoji: '🐧', label: 'Linux'      },
+  { emoji: '🌿', label: 'Git & GitHub'},
+  { emoji: '🐳', label: 'Docker'     },
+  { emoji: '⚙️', label: 'Jenkins'    },
+  { emoji: '☁️', label: 'AWS'        },
+  { emoji: '🏗️', label: 'Terraform'  },
+  { emoji: '📦', label: 'Ansible'    },
+  { emoji: '🔒', label: 'Nginx'      },
 ];
 
 export default function Hero() {
-  // Animation effect
   useEffect(() => {
     document.querySelectorAll('.t-line').forEach((line, i) => {
       line.style.opacity = '0';
@@ -23,71 +22,64 @@ export default function Hero() {
     });
   }, []);
 
-  // Sticky CTA scroll effect
-  useEffect(() => {
-    const cta = document.getElementById('stickyCta');
-    const onScroll = () => {
-      cta?.classList.toggle('visible', window.scrollY > 400);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   return (
     <section className="section" id="home">
       <div className="hero-bg" />
       <div className="container hero-container">
         <div className="hero-content">
+
           <div className="hero-badge">
             <span className="badge-dot" />
             NEXT BATCH STARTS SOON · 25 SEATS ONLY
           </div>
+
+          {/* ✅ UPDATED HEADLINE */}
           <h1 className="hero-headline">
-            Go from Developer<br />
-            to <span className="highlight">DevOps Engineer</span><br />
-            in <em>2 months</em>
+            Start Your Real<br />
+            <span className="highlight">DevOps Journey</span><br />
+            &amp; Build Skills in <em>2 Months</em>
           </h1>
+
           <p className="hero-sub">
-            15 live classes. Real AWS infrastructure. 3 job-ready portfolio projects.
-            Land your first DevOps role with the exact tools companies use today.
+            15 live classes. Real AWS infrastructure. 3 job-ready portfolio
+            projects. Land your first DevOps role with the exact tools
+            companies use today.
           </p>
+
           <div className="hero-actions">
             <button
               className="btn-primary"
               onClick={() =>
-                document
-                  .getElementById('pricing')
-                  ?.scrollIntoView({ behavior: 'smooth' })
-              }
-            >
-              Enroll Now — Free First Class <span className="btn-arrow">→</span>
+                document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+              }>
+              Enroll Now — Free First Class{' '}
+              <span className="btn-arrow">→</span>
             </button>
             <button
               className="btn-ghost"
               onClick={() =>
-                document
-                  .getElementById('curriculum')
-                  ?.scrollIntoView({ behavior: 'smooth' })
-              }
-            >
+                document.getElementById('curriculum')?.scrollIntoView({ behavior: 'smooth' })
+              }>
               View Curriculum
             </button>
           </div>
+
           <div className="trust-row">
             {[
-              ['200+', 'Students'],
-              ['15', 'Live Classes'],
-              ['3', 'Real Projects'],
-              ['4.9★', 'Rating'],
-            ].map(([n, l]) => (
-              <div key={l} className="trust-item">
-                <span className="trust-num">{n}</span>
-                <span className="trust-label">{l}</span>
+              ['200+', 'Students'    ],
+              ['15',   'Live Classes'],
+              ['3',    'Real Projects'],
+              ['4.9★', 'Rating'      ],
+            ].map(([num, label]) => (
+              <div key={label} className="trust-item">
+                <span className="trust-num">{num}</span>
+                <span className="trust-label">{label}</span>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Terminal */}
         <div className="hero-visual">
           <div className="terminal-card">
             <div className="terminal-bar">
@@ -98,10 +90,10 @@ export default function Hero() {
             </div>
             <div className="terminal-body">
               {[
-                ['Stage 1', '✓', 'Checkout SCM'],
-                ['Stage 2', '✓', 'Run unit tests'],
-                ['Stage 3', '✓', 'Docker build & push → ECR'],
-                ['Stage 4', '✓', 'Ansible deploy → EC2'],
+                ['Stage 1', '✓', 'Checkout SCM'              ],
+                ['Stage 2', '✓', 'Run unit tests'            ],
+                ['Stage 3', '✓', 'Docker build & push → ECR' ],
+                ['Stage 4', '✓', 'Ansible deploy → EC2'      ],
               ].map(([step, ok, msg]) => (
                 <div key={step} className="t-line">
                   <span className="t-step">{step}</span>{' '}
@@ -114,22 +106,19 @@ export default function Hero() {
                 <span className="t-run">⟳</span>{' '}
                 <span className="t-msg">Health check...</span>
               </div>
-              <div className="t-line t-success">
-                ✓ Pipeline completed in 2m 14s
-              </div>
-              <div className="t-line t-info">
-                → Deployed to: app.devops.academy
-              </div>
+              <div className="t-line t-success">✓ Pipeline completed in 2m 14s</div>
+              <div className="t-line t-info">→ Deployed to: app.devops.academy</div>
               <div className="t-cursor">▌</div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Tools strip */}
       <div className="tools-strip">
         <div className="tools-label">Technologies you'll master:</div>
         <div className="tools-row">
-          {tools.map((t) => (
+          {tools.map(t => (
             <div key={t.label} className="tool-chip">
               <span className="tool-emoji">{t.emoji}</span> {t.label}
             </div>
