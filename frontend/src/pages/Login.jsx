@@ -2,25 +2,40 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Login() {
-  const { login }  = useAuth();
-  const navigate   = useNavigate();
-  const [form, setForm]     = useState({ email: '', password: '' });
-  const [error, setError]   = useState('');
+  const { login }   = useAuth();
+  const navigate    = useNavigate();
+  const [form, setForm]       = useState({ email: '', password: '' });
+  const [errors, setErrors]   = useState({});
+  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handle = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: '' });
+    setApiError('');
+  };
+
+  const validate = () => {
+    const e = {};
+    if (!form.email.trim())           e.email    = 'Email is required';
+    else if (!emailRegex.test(form.email)) e.email = 'Enter a valid email';
+    if (!form.password)               e.password = 'Password is required';
+    else if (form.password.length < 6) e.password = 'Minimum 6 characters';
+    return e;
+  };
 
   const submit = async () => {
-    setError('');
-    if (!form.email || !form.password)
-      return setError('All fields are required');
+    const e = validate();
+    if (Object.keys(e).length) return setErrors(e);
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid credentials');
+      setApiError(err.response?.data?.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }
@@ -31,44 +46,57 @@ export default function Login() {
       <div style={s.card}>
 
         <div style={s.brand}>
-          <span style={{ color: '#1A6ED4' }}>Dev</span>
-          <span style={{ color: '#2EA043' }}>Ops</span>
-          <span style={{ color: '#1A6ED4' }}>.</span>Academy
+          <span style={{ color:'#3B82F6' }}>Dev</span>
+          <span style={{ color:'#22C55E' }}>Ops</span>
+          <span style={{ color:'#3B82F6' }}>.</span>Academy
         </div>
 
-        <h2 style={s.title}>Student Login</h2>
-        <p style={s.sub}>Welcome back — continue your journey</p>
+        <div style={s.headingBlock}>
+          <h2 style={s.title}>Student Login</h2>
+          <p style={s.sub}>Enter your credentials to continue</p>
+        </div>
 
+        {/* Email */}
         <div style={s.field}>
           <label style={s.label}>Email Address</label>
-          <input name="email" type="email" value={form.email}
-            onChange={handle} placeholder="you@email.com"
-            style={s.input} />
+          <input
+            name="email" type="email"
+            value={form.email} onChange={handle}
+            placeholder="Enter your email"
+            style={{ ...s.input, ...(errors.email ? s.inputError : {}) }}
+          />
+          {errors.email && <span style={s.fieldErr}>{errors.email}</span>}
         </div>
 
+        {/* Password */}
         <div style={s.field}>
           <label style={s.label}>Password</label>
-          <input name="password" type="password" value={form.password}
-            onChange={handle} placeholder="••••••••"
-            style={s.input}
-            onKeyDown={e => e.key === 'Enter' && submit()} />
+          <input
+            name="password" type="password"
+            value={form.password} onChange={handle}
+            placeholder="Enter your password"
+            style={{ ...s.input, ...(errors.password ? s.inputError : {}) }}
+            onKeyDown={e => e.key === 'Enter' && submit()}
+          />
+          {errors.password && <span style={s.fieldErr}>{errors.password}</span>}
         </div>
 
-        {error && <div style={s.error}>{error}</div>}
+        {apiError && <div style={s.apiError}>{apiError}</div>}
 
         <button onClick={submit} disabled={loading} style={s.btn}>
           {loading ? 'Logging in...' : 'Login →'}
         </button>
 
-        <div style={s.divider} />
+        <div style={s.divider}>
+          <span style={s.dividerText}>New here?</span>
+        </div>
 
-        <p style={s.registerText}>
-          Not registered?{' '}
-          <Link to="/register" style={s.link}>Register now</Link>
-        </p>
+        <Link to="/register" style={s.registerBtn}>
+          Create a student account
+        </Link>
 
         <Link to="/adminlogin" style={s.adminLink}>
-          Admin access →
+          Admin access
         </Link>
       </div>
     </div>
@@ -78,95 +106,98 @@ export default function Login() {
 const s = {
   page: {
     minHeight: '100vh',
+    background: '#F3F4F6',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#F8F7F4',
     padding: '1rem',
   },
   card: {
-    background: '#fff',
-    border: '1px solid #E0DED8',
+    background: '#FFFFFF',
     borderRadius: '16px',
     padding: '2.5rem',
     width: '100%',
     maxWidth: '400px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+    gap: '.9rem',
+    boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
   },
   brand: {
     fontSize: '1.5rem',
-    fontWeight: '700',
+    fontWeight: '800',
     textAlign: 'center',
-    marginBottom: '.25rem',
+    letterSpacing: '-.5px',
   },
-  title: {
-    fontSize: '1.2rem',
-    fontWeight: '700',
-    color: '#0D1117',
-    textAlign: 'center',
-    margin: 0,
-  },
-  sub: {
-    color: '#586069',
-    fontSize: '.875rem',
-    textAlign: 'center',
-    marginTop: '-.5rem',
-  },
-  field: { display: 'flex', flexDirection: 'column', gap: '.35rem' },
-  label: { fontSize: '.85rem', fontWeight: '600', color: '#0D1117' },
+  headingBlock: { textAlign: 'center', marginBottom: '.25rem' },
+  title: { fontSize: '1.15rem', fontWeight: '700', color: '#111827', margin: 0 },
+  sub:   { fontSize: '.85rem', color: '#6B7280', marginTop: '.3rem' },
+  field: { display: 'flex', flexDirection: 'column', gap: '.3rem' },
+  label: { fontSize: '.85rem', fontWeight: '600', color: '#374151' },
   input: {
-    padding: '.75rem 1rem',
-    border: '1px solid #D0D7DE',
+    padding: '.7rem .9rem',
+    border: '1.5px solid #E5E7EB',
     borderRadius: '8px',
-    background: '#FAFAFA',
-    color: '#0D1117',
     fontSize: '.95rem',
+    color: '#111827',
+    background: '#F9FAFB',
     outline: 'none',
     fontFamily: 'inherit',
+    transition: 'border .2s',
+  },
+  inputError: { borderColor: '#EF4444' },
+  fieldErr:   { fontSize: '.78rem', color: '#EF4444' },
+  apiError: {
+    background: '#FEF2F2',
+    border: '1px solid #FECACA',
+    color: '#DC2626',
+    padding: '.6rem .9rem',
+    borderRadius: '8px',
+    fontSize: '.85rem',
   },
   btn: {
-    padding: '.85rem',
-    background: '#1A6ED4',
+    padding: '.8rem',
+    background: '#3B82F6',
     color: '#fff',
     border: 'none',
     borderRadius: '8px',
-    fontSize: '1rem',
-    fontWeight: '600',
+    fontSize: '.95rem',
+    fontWeight: '700',
     cursor: 'pointer',
-    marginTop: '.25rem',
     fontFamily: 'inherit',
-  },
-  error: {
-    background: '#FFF0F0',
-    border: '1px solid #CF222E',
-    color: '#CF222E',
-    padding: '.6rem 1rem',
-    borderRadius: '6px',
-    fontSize: '.85rem',
+    transition: 'opacity .2s',
   },
   divider: {
-    height: '1px',
-    background: '#E0DED8',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '.75rem',
+    margin: '.1rem 0',
   },
-  registerText: {
+  dividerText: {
+    fontSize: '.8rem',
+    color: '#9CA3AF',
+    whiteSpace: 'nowrap',
+    flex: 1,
     textAlign: 'center',
-    fontSize: '.875rem',
-    color: '#586069',
-    margin: 0,
   },
-  link: {
-    color: '#1A6ED4',
+  registerBtn: {
+    display: 'block',
+    padding: '.75rem',
+    background: '#F0FDF4',
+    border: '1.5px solid #BBF7D0',
+    borderRadius: '8px',
+    color: '#16A34A',
+    textAlign: 'center',
+    fontSize: '.9rem',
     fontWeight: '600',
     textDecoration: 'none',
   },
   adminLink: {
-    textAlign: 'center',
-    fontSize: '.8rem',
-    color: '#8B949E',
-    textDecoration: 'none',
     display: 'block',
+    textAlign: 'center',
+    fontSize: '.78rem',
+    color: '#9CA3AF',
+    textDecoration: 'none',
+    marginTop: '-.2rem',
   },
 };
