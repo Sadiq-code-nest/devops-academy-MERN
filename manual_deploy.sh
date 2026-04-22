@@ -6,7 +6,7 @@
 set -e
 
 # ── CONFIG ───────────────────────────────────────────────────
-REPO_URL="https://github.com/your-username/devops-academy.git"
+REPO_URL="https://github.com/Sadiq-code-nest/devops-academy-MERN.git"
 APP_DIR="/var/www/devops-academy"
 FRONTEND_PORT=4173
 BACKEND_PORT=5000
