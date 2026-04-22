@@ -22,6 +22,24 @@ export default function Hero() {
     });
   }, []);
 
+// Add from here at last ---------------------------------
+
+  
+import { useEffect } from 'react';
+
+// inside Home() component, before return:
+useEffect(() => {
+  const cta = document.getElementById('stickyCta');
+  const onScroll = () => {
+    cta?.classList.toggle('visible', window.scrollY > 400);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  return () => window.removeEventListener('scroll', onScroll);
+}, []);
+
+  
+// till add here at last ---------------------------------
+  
   return (
     <section className="section" id="home">
       <div className="hero-bg" />
