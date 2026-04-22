@@ -1,12 +1,29 @@
 const mongoose = require('mongoose');
 const bcrypt   = require('bcryptjs');
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const userSchema = new mongoose.Schema({
-  name:      { type: String, required: true, trim: true },
-  email:     { type: String, required: true, unique: true, lowercase: true },
-  password:  { type: String, required: true, minlength: 6 },
-  studentId: { type: String, required: true, unique: true, trim: true },
-  role:      { type: String, enum: ['student'], default: 'student' },
+  name: {
+    type: String, required: true, trim: true,
+    minlength: [2, 'Name must be at least 2 characters'],
+  },
+  email: {
+    type: String, required: true, unique: true, lowercase: true,
+    validate: {
+      validator: v => emailRegex.test(v),
+      message:   'Invalid email format',
+    },
+  },
+  password: {
+    type: String, required: true,
+    minlength: [6, 'Password must be at least 6 characters'],
+  },
+  studentId: {
+    type: String, required: true, unique: true, trim: true,
+    minlength: [3, 'Student ID too short'],
+  },
+  role: { type: String, enum: ['student'], default: 'student' },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
