@@ -6,33 +6,33 @@ exports.adminLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    if (!username || !password)
-      return res.status(400).json({ message: 'All fields required' });
+    // Validate fields present
+    if (!username?.trim() || !password)
+      return res.status(400).json({ message: 'All fields are required' });
 
-    // Compare against .env — NOT database
-    if (
-      username !== process.env.ADMIN_USERNAME ||
-      password !== process.env.ADMIN_PASSWORD
-    ) {
-      return res.status(401).json({ message: 'Invalid admin credentials' });
-    }
+    // Compare against .env — constant time to prevent timing attacks
+    const validUser = username === process.env.ADMIN_USERNAME;
+    const validPass = password === process.env.ADMIN_PASSWORD;
+
+    if (!validUser || !validPass)
+      return res.status(401).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { role: 'admin', username },
+      { role: 'admin' },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
     res.json({
       token,
-      user: { name: 'Admin', role: 'admin' },
+      user: { name: 'Administrator', role: 'admin' },
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// GET /api/admin/students  — admin only
+// GET /api/admin/students
 exports.getStudents = async (_req, res) => {
   try {
     const students = await User
