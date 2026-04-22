@@ -1,11 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
-import Home               from './pages/Home';
-import Login              from './pages/Login';
-import StudentDashboard   from './pages/student/Dashboard';
-import InstructorDashboard from './pages/instructor/Dashboard';
+import Home           from './pages/Home';
+import Login          from './pages/Login';
+import Register       from './pages/Register';
+import AdminLogin     from './pages/AdminLogin';
+import StudentDashboard from './pages/student/Dashboard';
+import AdminDashboard   from './pages/admin/Dashboard';
 
-// Guard — redirects to login if not authenticated
 function PrivateRoute({ children, allowedRoles }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
@@ -17,18 +18,23 @@ function PrivateRoute({ children, allowedRoles }) {
 export default function App() {
   return (
     <Routes>
-      <Route path="/"      element={<Home />} />
-      <Route path="/login" element={<Login />} />
+      {/* Public */}
+      <Route path="/"          element={<Home />} />
+      <Route path="/login"     element={<Login />} />
+      <Route path="/register"  element={<Register />} />
+      <Route path="/adminlogin" element={<AdminLogin />} />
 
-      <Route path="/student-dashboard" element={
-        <PrivateRoute allowedRoles={['student', 'admin']}>
+      {/* Student */}
+      <Route path="/dashboard" element={
+        <PrivateRoute allowedRoles={['student']}>
           <StudentDashboard />
         </PrivateRoute>
       } />
 
-      <Route path="/instructor-dashboard" element={
-        <PrivateRoute allowedRoles={['instructor', 'admin']}>
-          <InstructorDashboard />
+      {/* Admin */}
+      <Route path="/admin-dashboard" element={
+        <PrivateRoute allowedRoles={['admin']}>
+          <AdminDashboard />
         </PrivateRoute>
       } />
 
