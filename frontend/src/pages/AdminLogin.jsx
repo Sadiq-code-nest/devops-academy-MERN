@@ -1,21 +1,23 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 export default function AdminLogin() {
   const { setUserManually } = useAuth();
-  const navigate = useNavigate();
-  const [form, setForm]     = useState({ username:'', password:'' });
-  const [error, setError]   = useState('');
+  const navigate  = useNavigate();
+  const [form, setForm]       = useState({ username: '', password: '' });
+  const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handle = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError('');
+  };
 
   const submit = async () => {
-    setError('');
-    if (!form.username || !form.password)
-      return setError('All fields required');
+    if (!form.username.trim() || !form.password)
+      return setError('All fields are required');
     setLoading(true);
     try {
       const { data } = await api.post('/admin/login', form);
@@ -24,7 +26,7 @@ export default function AdminLogin() {
       setUserManually(data.user);
       navigate('/admin-dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid admin credentials');
+      setError('Invalid credentials');   // always generic
     } finally {
       setLoading(false);
     }
@@ -34,30 +36,31 @@ export default function AdminLogin() {
     <div style={s.page}>
       <div style={s.card}>
 
-        <div style={s.lockIcon}>🔒</div>
-        <h2 style={s.title}>Admin Access</h2>
-        <p style={s.sub}>Restricted area — authorized personnel only</p>
+        <div style={s.iconWrap}>🔒</div>
+        <h2 style={s.title}>Restricted Access</h2>
+        <p style={s.sub}>Authorized personnel only</p>
 
         <div style={s.field}>
           <label style={s.label}>Username</label>
           <input name="username" value={form.username} onChange={handle}
-            placeholder="admin" style={s.input} />
+            placeholder="Enter username" style={s.input}
+            autoComplete="off" />
         </div>
 
         <div style={s.field}>
           <label style={s.label}>Password</label>
           <input name="password" type="password" value={form.password}
-            onChange={handle} placeholder="••••••••" style={s.input}
+            onChange={handle} placeholder="Enter password" style={s.input}
             onKeyDown={e => e.key === 'Enter' && submit()} />
         </div>
 
         {error && <div style={s.error}>{error}</div>}
 
         <button onClick={submit} disabled={loading} style={s.btn}>
-          {loading ? 'Verifying...' : 'Login as Admin →'}
+          {loading ? 'Verifying...' : 'Login'}
         </button>
 
-        <a href="/login" style={s.back}>← Student login</a>
+        <Link to="/login" style={s.back}>← Student login</Link>
       </div>
     </div>
   );
@@ -65,41 +68,40 @@ export default function AdminLogin() {
 
 const s = {
   page: {
-    minHeight: '100vh', display: 'flex',
-    alignItems: 'center', justifyContent: 'center',
-    background: '#F0F2F5', padding: '1rem',
+    minHeight: '100vh', background: '#F3F4F6',
+    display: 'flex', alignItems: 'center',
+    justifyContent: 'center', padding: '1rem',
   },
   card: {
-    background: '#fff', border: '1px solid #E0DED8',
-    borderRadius: '16px', padding: '2.5rem',
-    width: '100%', maxWidth: '380px',
-    display: 'flex', flexDirection: 'column', gap: '1rem',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+    background: '#fff', borderRadius: '16px', padding: '2.5rem',
+    width: '100%', maxWidth: '380px', display: 'flex',
+    flexDirection: 'column', gap: '1rem',
+    boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
   },
-  lockIcon: { fontSize: '2rem', textAlign: 'center' },
-  title:    { fontSize: '1.2rem', fontWeight: '700', color: '#0D1117',
-              textAlign: 'center', margin: 0 },
-  sub:      { color: '#586069', fontSize: '.85rem', textAlign: 'center',
-              marginTop: '-.5rem' },
-  field:    { display: 'flex', flexDirection: 'column', gap: '.35rem' },
-  label:    { fontSize: '.85rem', fontWeight: '600', color: '#0D1117' },
+  iconWrap: { fontSize: '2rem', textAlign: 'center' },
+  title: { fontSize: '1.15rem', fontWeight: '700', color: '#111827',
+            textAlign: 'center', margin: 0 },
+  sub:   { color: '#6B7280', fontSize: '.85rem', textAlign: 'center',
+            marginTop: '-.5rem' },
+  field: { display: 'flex', flexDirection: 'column', gap: '.3rem' },
+  label: { fontSize: '.85rem', fontWeight: '600', color: '#374151' },
   input: {
-    padding: '.75rem 1rem', border: '1px solid #D0D7DE',
-    borderRadius: '8px', background: '#FAFAFA', color: '#0D1117',
-    fontSize: '.95rem', outline: 'none', fontFamily: 'inherit',
+    padding: '.7rem .9rem', border: '1.5px solid #E5E7EB',
+    borderRadius: '8px', fontSize: '.95rem', color: '#111827',
+    background: '#F9FAFB', outline: 'none', fontFamily: 'inherit',
   },
   btn: {
-    padding: '.85rem', background: '#0D1117', color: '#fff',
-    border: 'none', borderRadius: '8px', fontSize: '1rem',
-    fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit',
+    padding: '.8rem', background: '#374151', color: '#fff',
+    border: 'none', borderRadius: '8px', fontSize: '.95rem',
+    fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit',
   },
   error: {
-    background: '#FFF0F0', border: '1px solid #CF222E',
-    color: '#CF222E', padding: '.6rem 1rem',
-    borderRadius: '6px', fontSize: '.85rem',
+    background: '#FEF2F2', border: '1px solid #FECACA',
+    color: '#DC2626', padding: '.6rem .9rem',
+    borderRadius: '8px', fontSize: '.85rem',
   },
   back: {
-    textAlign: 'center', fontSize: '.85rem',
-    color: '#8B949E', textDecoration: 'none', display: 'block',
+    textAlign: 'center', fontSize: '.82rem',
+    color: '#9CA3AF', textDecoration: 'none', display: 'block',
   },
 };
