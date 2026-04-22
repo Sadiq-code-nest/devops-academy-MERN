@@ -3,224 +3,170 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const { login } = useAuth();
-  const navigate  = useNavigate();
-  const [tab,  setTab]  = useState('login');   // 'login' | 'register'
-  const [role, setRole] = useState('student'); // 'student' | 'instructor'
-  const [form, setForm] = useState({ name:'', email:'', password:'' });
-  const [error, setError] = useState('');
+  const { login }  = useAuth();
+  const navigate   = useNavigate();
+  const [form, setForm]     = useState({ email: '', password: '' });
+  const [error, setError]   = useState('');
   const [loading, setLoading] = useState(false);
 
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async () => {
     setError('');
+    if (!form.email || !form.password)
+      return setError('All fields are required');
     setLoading(true);
     try {
-      if (tab === 'register') {
-        // Register then auto-login
-        const api = (await import('../api/axios')).default;
-        await api.post('/auth/register', { ...form, role });
-      }
       const user = await login(form.email, form.password);
-      const dest  = user.role === 'instructor'
-        ? '/instructor-dashboard'
-        : user.role === 'admin'
-        ? '/admin'
-        : '/student-dashboard';
-      navigate(dest);
+      navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      setError(err.response?.data?.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
+    <div style={s.page}>
+      <div style={s.card}>
 
-        {/* Brand */}
-        <div style={styles.brand}>
-          <span style={{ color:'var(--blue)' }}>Dev</span>
-          <span style={{ color:'var(--green)' }}>Ops</span>
-          <span style={{ color:'var(--blue)' }}>.</span>Academy
-        </div>
-        <p style={styles.subtitle}>
-          {tab === 'login' ? 'Welcome back' : 'Create your account'}
-        </p>
-
-        {/* Tab Switch */}
-        <div style={styles.tabRow}>
-          {['login','register'].map(t => (
-            <button key={t} onClick={() => { setTab(t); setError(''); }}
-              style={{ ...styles.tab, ...(tab === t ? styles.tabActive : {}) }}>
-              {t === 'login' ? 'Login' : 'Register'}
-            </button>
-          ))}
+        <div style={s.brand}>
+          <span style={{ color: '#1A6ED4' }}>Dev</span>
+          <span style={{ color: '#2EA043' }}>Ops</span>
+          <span style={{ color: '#1A6ED4' }}>.</span>Academy
         </div>
 
-        {/* Role Selector */}
-        <div style={styles.roleRow}>
-          {['student','instructor'].map(r => (
-            <button key={r} onClick={() => setRole(r)}
-              style={{ ...styles.roleBtn, ...(role === r ? styles.roleBtnActive : {}) }}>
-              {r === 'student' ? '🎓 Student' : '👨‍🏫 Instructor'}
-            </button>
-          ))}
+        <h2 style={s.title}>Student Login</h2>
+        <p style={s.sub}>Welcome back — continue your journey</p>
+
+        <div style={s.field}>
+          <label style={s.label}>Email Address</label>
+          <input name="email" type="email" value={form.email}
+            onChange={handle} placeholder="you@email.com"
+            style={s.input} />
         </div>
 
-        {/* Fields */}
-        {tab === 'register' && (
-          <input name="name" placeholder="Full Name"
-            value={form.name} onChange={handle} style={styles.input} />
-        )}
-        <input name="email" type="email" placeholder="Email Address"
-          value={form.email} onChange={handle} style={styles.input} />
-        <input name="password" type="password" placeholder="Password"
-          value={form.password} onChange={handle} style={styles.input}
-          onKeyDown={e => e.key === 'Enter' && submit()} />
+        <div style={s.field}>
+          <label style={s.label}>Password</label>
+          <input name="password" type="password" value={form.password}
+            onChange={handle} placeholder="••••••••"
+            style={s.input}
+            onKeyDown={e => e.key === 'Enter' && submit()} />
+        </div>
 
-        {/* Error */}
-        {error && <div style={styles.error}>{error}</div>}
+        {error && <div style={s.error}>{error}</div>}
 
-        {/* Submit */}
-        <button onClick={submit} disabled={loading} style={styles.btn}>
-          {loading ? 'Please wait...' : tab === 'login' ? 'Login →' : 'Create Account →'}
+        <button onClick={submit} disabled={loading} style={s.btn}>
+          {loading ? 'Logging in...' : 'Login →'}
         </button>
 
-        {/* Seed note */}
-        <div style={styles.note}>
-          Admin: admin@devopsacademy.com / Admin@1234
-        </div>
+        <div style={s.divider} />
 
-        <Link to="/" style={styles.back}>← Back to site</Link>
+        <p style={s.registerText}>
+          Not registered?{' '}
+          <Link to="/register" style={s.link}>Register now</Link>
+        </p>
+
+        <Link to="/adminlogin" style={s.adminLink}>
+          Admin access →
+        </Link>
       </div>
     </div>
   );
 }
 
-const styles = {
+const s = {
   page: {
     minHeight: '100vh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: 'var(--bg)',
+    background: '#F8F7F4',
     padding: '1rem',
   },
   card: {
-    background: 'var(--bg-alt)',
-    border: '1px solid var(--border)',
+    background: '#fff',
+    border: '1px solid #E0DED8',
     borderRadius: '16px',
     padding: '2.5rem',
     width: '100%',
-    maxWidth: '420px',
+    maxWidth: '400px',
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
-    boxShadow: 'var(--shadow-lg)',
+    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
   },
   brand: {
-    fontSize: '1.6rem',
+    fontSize: '1.5rem',
     fontWeight: '700',
-    fontFamily: 'var(--font-body)',
     textAlign: 'center',
-    color: 'var(--text)',
+    marginBottom: '.25rem',
   },
-  subtitle: {
+  title: {
+    fontSize: '1.2rem',
+    fontWeight: '700',
+    color: '#0D1117',
     textAlign: 'center',
-    color: 'var(--text-muted)',
-    fontSize: '.9rem',
+    margin: 0,
+  },
+  sub: {
+    color: '#586069',
+    fontSize: '.875rem',
+    textAlign: 'center',
     marginTop: '-.5rem',
   },
-  tabRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    background: 'var(--bg)',
-    borderRadius: '8px',
-    padding: '4px',
-    gap: '4px',
-  },
-  tab: {
-    padding: '.5rem',
-    border: 'none',
-    borderRadius: '6px',
-    background: 'transparent',
-    cursor: 'pointer',
-    fontFamily: 'var(--font-body)',
-    fontSize: '.9rem',
-    color: 'var(--text-muted)',
-    transition: 'all .2s',
-  },
-  tabActive: {
-    background: 'var(--blue)',
-    color: '#fff',
-    fontWeight: '600',
-  },
-  roleRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '.5rem',
-  },
-  roleBtn: {
-    padding: '.6rem',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
-    background: 'transparent',
-    cursor: 'pointer',
-    fontFamily: 'var(--font-body)',
-    fontSize: '.85rem',
-    color: 'var(--text-muted)',
-    transition: 'all .2s',
-  },
-  roleBtnActive: {
-    border: '1px solid var(--blue)',
-    color: 'var(--blue)',
-    background: 'var(--blue-light)',
-    fontWeight: '600',
-  },
+  field: { display: 'flex', flexDirection: 'column', gap: '.35rem' },
+  label: { fontSize: '.85rem', fontWeight: '600', color: '#0D1117' },
   input: {
     padding: '.75rem 1rem',
-    border: '1px solid var(--border)',
+    border: '1px solid #D0D7DE',
     borderRadius: '8px',
-    background: 'var(--bg)',
-    color: 'var(--text)',
-    fontFamily: 'var(--font-body)',
+    background: '#FAFAFA',
+    color: '#0D1117',
     fontSize: '.95rem',
     outline: 'none',
-    width: '100%',
+    fontFamily: 'inherit',
   },
   btn: {
     padding: '.85rem',
-    background: 'var(--blue)',
+    background: '#1A6ED4',
     color: '#fff',
     border: 'none',
     borderRadius: '8px',
-    fontFamily: 'var(--font-body)',
     fontSize: '1rem',
     fontWeight: '600',
     cursor: 'pointer',
     marginTop: '.25rem',
+    fontFamily: 'inherit',
   },
   error: {
-    background: '#fff0f0',
+    background: '#FFF0F0',
     border: '1px solid #CF222E',
     color: '#CF222E',
     padding: '.6rem 1rem',
     borderRadius: '6px',
     fontSize: '.85rem',
   },
-  note: {
-    textAlign: 'center',
-    fontSize: '.75rem',
-    color: 'var(--text-light)',
-    fontFamily: 'var(--font-mono)',
+  divider: {
+    height: '1px',
+    background: '#E0DED8',
   },
-  back: {
+  registerText: {
     textAlign: 'center',
-    fontSize: '.85rem',
-    color: 'var(--text-muted)',
+    fontSize: '.875rem',
+    color: '#586069',
+    margin: 0,
+  },
+  link: {
+    color: '#1A6ED4',
+    fontWeight: '600',
     textDecoration: 'none',
+  },
+  adminLink: {
+    textAlign: 'center',
+    fontSize: '.8rem',
+    color: '#8B949E',
+    textDecoration: 'none',
+    display: 'block',
   },
 };
