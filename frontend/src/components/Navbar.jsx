@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
 
 const links = ['home','outcomes','curriculum','workflow','projects','instructor','reviews','pricing'];
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  
   const [menuOpen, setMenuOpen] = useState(false);
   const [dark, setDark]         = useState(() =>
     localStorage.getItem('devops-theme') === 'dark' ||
@@ -36,16 +42,54 @@ export default function Navbar() {
             </button>
           ))}
         </nav>
-        <div className="nav-right">
-          <button className="dark-toggle" onClick={() => setDark(d => !d)}>
-            <span className="toggle-icon">{dark ? '☀' : '◐'}</span>
-          </button>
-          <button className="nav-cta" onClick={() => scrollTo('pricing')}>Enroll Now</button>
-          <button className={`hamburger ${menuOpen ? 'open' : ''}`}
-            onClick={() => setMenuOpen(o => !o)}>
-            <span /><span /><span />
-          </button>
-        </div>
+
+
+        {/* updates from here*/}
+
+     <div className="nav-right">
+  <button className="dark-toggle" onClick={() => setDark(d => !d)}>
+    <span className="toggle-icon">{dark ? '☀' : '◐'}</span>
+  </button>
+
+  {/* ── ADD THIS BLOCK ── */}
+  {user ? (
+    <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
+      <span style={{ fontSize:'.8rem', opacity:.7 }}>{user.name}</span>
+      <button className="nav-cta" style={{ background:'transparent',
+        border:'1px solid var(--blue)', color:'var(--blue)' }}
+        onClick={() => {
+          logout();
+          navigate('/');
+        }}>
+        Logout
+      </button>
+      <button className="nav-cta" onClick={() =>
+        navigate(user.role === 'instructor' ? '/instructor-dashboard' : '/student-dashboard')
+      }>
+        Dashboard
+      </button>
+    </div>
+  ) : (
+    <button className="nav-cta" onClick={() => navigate('/login')}>
+      Login
+    </button>
+  )}
+  {/* ── END BLOCK ── */}
+
+  <button className="nav-cta" onClick={() => scrollTo('pricing')}
+    style={{ display: user ? 'none' : 'inline-flex' }}>
+    Enroll Now
+  </button>
+  <button className={`hamburger ${menuOpen ? 'open' : ''}`}
+    onClick={() => setMenuOpen(o => !o)}>
+    <span /><span /><span />
+  </button>
+</div>
+
+
+
+
+        
       </header>
 
       {menuOpen && (
