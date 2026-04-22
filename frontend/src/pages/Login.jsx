@@ -20,10 +20,10 @@ export default function Login() {
 
   const validate = () => {
     const e = {};
-    if (!form.email.trim())           e.email    = 'Email is required';
-    else if (!emailRegex.test(form.email)) e.email = 'Enter a valid email';
-    if (!form.password)               e.password = 'Password is required';
-    else if (form.password.length < 6) e.password = 'Minimum 6 characters';
+    if (!form.email.trim())                e.email    = 'Email is required';
+    else if (!emailRegex.test(form.email)) e.email    = 'Enter a valid email';
+    if (!form.password)                    e.password = 'Password is required';
+    else if (form.password.length < 6)     e.password = 'Minimum 6 characters';
     return e;
   };
 
@@ -32,7 +32,7 @@ export default function Login() {
     if (Object.keys(e).length) return setErrors(e);
     setLoading(true);
     try {
-      const user = await login(form.email, form.password);
+      await login(form.email, form.password);
       navigate('/dashboard');
     } catch (err) {
       setApiError(err.response?.data?.message || 'Invalid credentials');
@@ -45,15 +45,17 @@ export default function Login() {
     <div style={s.page}>
       <div style={s.card}>
 
+        {/* Brand */}
         <div style={s.brand}>
-          <span style={{ color:'#3B82F6' }}>Dev</span>
-          <span style={{ color:'#22C55E' }}>Ops</span>
-          <span style={{ color:'#3B82F6' }}>.</span>Academy
+          <span style={{ color: '#3B82F6' }}>Dev</span>
+          <span style={{ color: '#22C55E' }}>Ops</span>
+          <span style={{ color: '#3B82F6' }}>.</span>
+          <span style={{ color: '#111827' }}>Academy</span>
         </div>
 
         <div style={s.headingBlock}>
-          <h2 style={s.title}>Student Login</h2>
-          <p style={s.sub}>Enter your credentials to continue</p>
+          <h2 style={s.title}>Welcome Back</h2>
+          <p style={s.sub}>Login to continue your DevOps journey</p>
         </div>
 
         {/* Email */}
@@ -63,7 +65,7 @@ export default function Login() {
             name="email" type="email"
             value={form.email} onChange={handle}
             placeholder="Enter your email"
-            style={{ ...s.input, ...(errors.email ? s.inputError : {}) }}
+            style={{ ...s.input, ...(errors.email ? s.inputErr : {}) }}
           />
           {errors.email && <span style={s.fieldErr}>{errors.email}</span>}
         </div>
@@ -75,29 +77,35 @@ export default function Login() {
             name="password" type="password"
             value={form.password} onChange={handle}
             placeholder="Enter your password"
-            style={{ ...s.input, ...(errors.password ? s.inputError : {}) }}
+            style={{ ...s.input, ...(errors.password ? s.inputErr : {}) }}
             onKeyDown={e => e.key === 'Enter' && submit()}
           />
           {errors.password && <span style={s.fieldErr}>{errors.password}</span>}
         </div>
 
+        {/* API error */}
         {apiError && <div style={s.apiError}>{apiError}</div>}
 
+        {/* Login button */}
         <button onClick={submit} disabled={loading} style={s.btn}>
           {loading ? 'Logging in...' : 'Login →'}
         </button>
 
-        <div style={s.divider}>
-          <span style={s.dividerText}>New here?</span>
+        {/* Divider */}
+        <div style={s.dividerRow}>
+          <div style={s.dividerLine} />
+          <span style={s.dividerLabel}>New to DevOps Academy?</span>
+          <div style={s.dividerLine} />
         </div>
 
-        <Link to="/register" style={s.registerBtn}>
-          Create a student account
-        </Link>
+        {/* Register prompt — eye-catching */}
+        <div style={s.registerPrompt}>
+          Not registered yet?{' '}
+          <Link to="/register" style={s.registerLink}>
+            Register now
+          </Link>
+        </div>
 
-        <Link to="/adminlogin" style={s.adminLink}>
-          Admin access
-        </Link>
       </div>
     </div>
   );
@@ -119,85 +127,4 @@ const s = {
     width: '100%',
     maxWidth: '400px',
     display: 'flex',
-    flexDirection: 'column',
-    gap: '.9rem',
-    boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
-  },
-  brand: {
-    fontSize: '1.5rem',
-    fontWeight: '800',
-    textAlign: 'center',
-    letterSpacing: '-.5px',
-  },
-  headingBlock: { textAlign: 'center', marginBottom: '.25rem' },
-  title: { fontSize: '1.15rem', fontWeight: '700', color: '#111827', margin: 0 },
-  sub:   { fontSize: '.85rem', color: '#6B7280', marginTop: '.3rem' },
-  field: { display: 'flex', flexDirection: 'column', gap: '.3rem' },
-  label: { fontSize: '.85rem', fontWeight: '600', color: '#374151' },
-  input: {
-    padding: '.7rem .9rem',
-    border: '1.5px solid #E5E7EB',
-    borderRadius: '8px',
-    fontSize: '.95rem',
-    color: '#111827',
-    background: '#F9FAFB',
-    outline: 'none',
-    fontFamily: 'inherit',
-    transition: 'border .2s',
-  },
-  inputError: { borderColor: '#EF4444' },
-  fieldErr:   { fontSize: '.78rem', color: '#EF4444' },
-  apiError: {
-    background: '#FEF2F2',
-    border: '1px solid #FECACA',
-    color: '#DC2626',
-    padding: '.6rem .9rem',
-    borderRadius: '8px',
-    fontSize: '.85rem',
-  },
-  btn: {
-    padding: '.8rem',
-    background: '#3B82F6',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '.95rem',
-    fontWeight: '700',
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    transition: 'opacity .2s',
-  },
-  divider: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '.75rem',
-    margin: '.1rem 0',
-  },
-  dividerText: {
-    fontSize: '.8rem',
-    color: '#9CA3AF',
-    whiteSpace: 'nowrap',
-    flex: 1,
-    textAlign: 'center',
-  },
-  registerBtn: {
-    display: 'block',
-    padding: '.75rem',
-    background: '#F0FDF4',
-    border: '1.5px solid #BBF7D0',
-    borderRadius: '8px',
-    color: '#16A34A',
-    textAlign: 'center',
-    fontSize: '.9rem',
-    fontWeight: '600',
-    textDecoration: 'none',
-  },
-  adminLink: {
-    display: 'block',
-    textAlign: 'center',
-    fontSize: '.78rem',
-    color: '#9CA3AF',
-    textDecoration: 'none',
-    marginTop: '-.2rem',
-  },
-};
+    fle
