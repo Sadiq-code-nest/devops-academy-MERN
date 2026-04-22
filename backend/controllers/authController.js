@@ -7,7 +7,7 @@ const signToken = (id, role) =>
 // POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
     if (!name || !email || !password)
       return res.status(400).json({ message: 'All fields required' });
 
@@ -15,10 +15,15 @@ exports.register = async (req, res) => {
     if (exists)
       return res.status(409).json({ message: 'Email already registered' });
 
-    const user  = await User.create({ name, email, password });
+    // Only allow student or instructor from registration
+    const allowedRole = ['student', 'instructor'].includes(role) ? role : 'student';
+    const user  = await User.create({ name, email, password, role: allowedRole });
     const token = signToken(user._id, user.role);
 
-    res.status(201).json({ token, user: { id: user._id, name: user.name, role: user.role } });
+    res.status(201).json({
+      token,
+      user: { id: user._id, name: user.name, role: user.role },
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -37,7 +42,10 @@ exports.login = async (req, res) => {
 
     const token = signToken(user._id, user.role);
 
-    res.json({ token, user: { id: user._id, name: user.name, role: user.role } });
+    res.json({
+      token,
+      user: { id: user._id, name: user.name, role: user.role },
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
