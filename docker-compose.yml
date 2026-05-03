@@ -1,0 +1,58 @@
+version: "3.9"
+
+# ── DevOps Academy — Full Stack with Docker Compose ─────────
+# Starts: MongoDB + Backend + Frontend in one command
+# Usage:  docker compose up --build -d
+
+services:
+
+  # ── MongoDB ───────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: devops_mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: devops-academy
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (Node/Express) ────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: devops_backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    environment:
+      # Override MONGO_URI to use container hostname
+      MONGO_URI: mongodb://mongo:27017/devops-academy
+      NODE_ENV:  production
+    ports:
+      - "5000:5000"
+
+  # ── Frontend (React + Nginx) ──────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: devops_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+# ── Volumes ───────────────────────────────────────────────────
+volumes:
+  mongo_data:
+    name: devops_mongo_data
