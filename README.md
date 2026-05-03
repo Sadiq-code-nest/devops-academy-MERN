@@ -1,10 +1,4 @@
 # DevOps Academy — PM2 Deployment
-
-> **Branch:** `pm2-deployment`
-> Demonstrates deploying a MERN stack backend using PM2 process manager on a Linux server.
-
----
-
 ## Overview
 
 This branch adds PM2 configuration to keep the Node.js backend running persistently on a server — survives crashes, reboots, and disconnects.
