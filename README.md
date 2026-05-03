@@ -1,8 +1,4 @@
 # DevOps Academy — Nginx Deployment
-
-> **Branch:** `nginx-deployment`
-> Demonstrates deploying a MERN stack with Nginx as reverse proxy — production standard setup.
-
 ---
 
 ## Overview
