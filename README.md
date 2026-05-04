@@ -1,140 +1,78 @@
-# DevOps Academy — PM2 Deployment
-## Overview
+# DevOps Academy: PM2 deployment
 
-This branch adds PM2 configuration to keep the Node.js backend running persistently on a server — survives crashes, reboots, and disconnects.
+A full-stack DevOps course platform built with MongoDB, Express, React, and Node.js.
 
-```
-Stack:   Node.js (PM2) + React (serve) + MongoDB Atlas
-OS:      Ubuntu 22.04
-Ports:   5000 (backend) · 4173 (frontend)
-```
+**Live:** [devops-academy.com](http://65.2.130.110:4173) &nbsp;|&nbsp; **Branch:** `pm2-deployment`
 
 ---
 
-## Prerequisites
+## Quick Deploy — Ubuntu Server
+
+### Automated (Recommended)
 
 ```bash
-node -v     # v18 or v20
-npm -v      # v9 or v10
-pm2 -v      # any recent version
+wget https://raw.githubusercontent.com/Sadiq-code-nest/devops-academy-MERN/pm2-deployment/manual_deploy.sh
+chmod +x manual_deploy.sh
+sudo ./manual_deploy.sh
 ```
 
-Install PM2 and serve globally:
-```bash
-npm install -g pm2 serve
-```
+Script handles everything — Node.js, MongoDB, environment setup, build, PM2, firewall.
+Prompts for 3 values: server IP, admin username, admin password.
 
----
-
-## Setup
-
-### 1. Clone and install
+### Manual
 
 ```bash
-git clone -b pm2-deployment https://github.com/your-username/devops-academy.git
-cd devops-academy
+# 1. Install tools
+apt update -y
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs git && npm install -g pm2 serve
 
-cd backend  && npm install
-cd ../frontend && npm install
-```
+# 2. Install MongoDB
+curl -fsSL https://pgp.mongodb.com/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb.gpg
+echo "deb [signed-by=/usr/share/keyrings/mongodb.gpg arch=amd64,arm64] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" > /etc/apt/sources.list.d/mongodb-org.list
+apt update && apt install -y mongodb-org && systemctl enable --now mongod
 
-### 2. Environment files
+# 3. Clone
+git clone -b pm2-deployment https://github.com/Sadiq-code-nest/devops-academy-MERN.git /var/www/devops-academy
+cd /var/www/devops-academy
 
-```bash
-cp backend/.env.example  backend/.env
-cp frontend/.env.example frontend/.env
-```
-
-Edit `backend/.env`:
-```env
+# 4. Environment (replace YOUR_IP)
+cat > backend/.env <<EOF
 PORT=5000
-MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/devops-academy
-JWT_SECRET=your_long_random_secret
+MONGO_URI=mongodb://localhost:27017/devops-academy
+JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('hex'))")
 NODE_ENV=production
-CLIENT_URL=http://your-server-ip:4173
+CLIENT_URL=http://YOUR_IP:4173
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=your_secure_password
-```
+ADMIN_PASSWORD=your_password
+EOF
 
-Edit `frontend/.env`:
-```env
-VITE_API_URL=http://your-server-ip:5000/api
-```
+echo "VITE_API_URL=http://YOUR_IP:5000/api" > frontend/.env
+chmod 600 backend/.env
 
-### 3. Seed admin user
+# 5. Install, seed, build
+cd backend && npm install && node seed.js
+cd ../frontend && npm install && npm run build
 
-```bash
-cd backend
-node seed.js
-```
-
-### 4. Build frontend
-
-```bash
-cd frontend
-npm run build
-```
-
----
-
-## Run
-
-### Start all services
-
-```bash
-# Backend via PM2
-pm2 start ecosystem.config.js --env production
-
-# Frontend via PM2 static server
-pm2 serve frontend/dist 4173 --name devops-frontend --spa
-
-# Save config (auto-restart on reboot)
-pm2 save
-pm2 startup
-# Run the command PM2 prints
-```
-
-### PM2 Commands
-
-```bash
-pm2 list                          # view all processes
-pm2 logs devops-backend           # live backend logs
-pm2 logs devops-backend --lines 50 # last 50 lines
-pm2 restart devops-backend        # restart backend
-pm2 stop devops-backend           # stop backend
-pm2 delete devops-backend         # remove from PM2
-pm2 monit                         # live CPU/memory dashboard
+# 6. Start with PM2
+pm2 start /var/www/devops-academy/backend/server.js --name devops-backend --cwd /var/www/devops-academy/backend
+pm2 serve /var/www/devops-academy/frontend/dist 4173 --name devops-frontend --spa
+pm2 save && pm2 startup
 ```
 
 ---
 
 ## Access
 
-```
-Frontend  →  http://your-server-ip:4173
-Backend   →  http://your-server-ip:5000/api/health
-Login     →  http://your-server-ip:4173/login
-Admin     →  http://your-server-ip:4173/adminlogin
-```
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
+| | URL |
 |---|---|
-| Port 5000 in use | `pm2 delete devops-backend` then restart |
-| Backend shows errored | `pm2 logs devops-backend --lines 30` |
-| MongoDB failed | Check MONGO_URI in `backend/.env` |
-| Registration failing | Verify `CLIENT_URL` matches frontend URL |
-| Changes not showing | `pm2 restart devops-backend` |
+| Frontend | `http://YOUR_IP:4173` |
+| API | `http://YOUR_IP:5000/api/health` |
+| Student Login | `http://YOUR_IP:4173/login` |
+| Admin Login | `http://YOUR_IP:4173/adminlogin` |
 
 ---
 
-## Production Notes
+## Tech Stack
 
-- PM2 keeps backend alive if it crashes
-- `pm2 startup` ensures restart after server reboot
-- Logs are saved to `./logs/` directory
-- For HTTPS and single-port access → use the `nginx-deployment` branch
-- For containerized deployment → use the `docker-compose` branch
+`React 18` · `Vite` · `Node.js` · `Express` · `MongoDB` · `Mongoose` · `JWT` · `PM2`
