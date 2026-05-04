@@ -1,178 +1,104 @@
 #!/bin/bash
-# ============================================================
-# DevOps Academy — MERN Deployment WITHOUT Nginx (Fixed)
-# Usage: chmod +x deploy-without-nginx.sh && ./deploy-without-nginx.sh
-# ============================================================
+# DevOps Academy — PM2 Deployment
+# Usage: chmod +x deploy.sh && sudo ./deploy.sh
 set -e
 
-# ── CONFIG ───────────────────────────────────────────────────
-REPO_URL="https://github.com/Sadiq-code-nest/devops-academy-MERN.git"
-APP_DIR="/var/www/devops-academy"
-FRONTEND_PORT=4173
-BACKEND_PORT=5000
-SERVER_IP=$(curl -s ifconfig.me)
+REPO="https://github.com/Sadiq-code-nest/devops-academy-MERN.git"
+DIR="/var/www/devops-academy"
+IP=$(curl -s ifconfig.me)
 
-# ── SYSTEM ───────────────────────────────────────────────────
-echo "→ Updating system..."
-sudo apt update -y && sudo apt upgrade -y
+# ── Tools ────────────────────────────────────────────────────
+apt update -y
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs git
+npm install -g pm2 serve
 
-echo "→ Installing Node.js v20..."
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs git
+# ── MongoDB ──────────────────────────────────────────────────
+# Note: Ubuntu 24.04 (Noble) must use 'jammy' MongoDB repo
+curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
+  gpg --dearmor -o /usr/share/keyrings/mongodb.gpg
 
-echo "→ Installing PM2 + serve..."
-sudo npm install -g pm2 serve
+echo "deb [signed-by=/usr/share/keyrings/mongodb.gpg arch=amd64,arm64] \
+https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" \
+  > /etc/apt/sources.list.d/mongodb-org.list
 
-# ── KILL EXISTING PROCESSES ──────────────────────────────────
-echo "→ Cleaning up existing processes..."
-pm2 stop all 2>/dev/null || true
-pm2 delete all 2>/dev/null || true
-sleep 2
+apt update && apt install -y mongodb-org
+systemctl enable --now mongod
+sleep 3
+systemctl is-active --quiet mongod \
+  && echo "✅ MongoDB running" \
+  || { echo "❌ mongod failed. Run: systemctl status mongod"; exit 1; }
 
-PORT_PID=$(lsof -ti :$BACKEND_PORT 2>/dev/null) && kill -9 $PORT_PID 2>/dev/null || true
-PORT_PID=$(lsof -ti :$FRONTEND_PORT 2>/dev/null) && kill -9 $PORT_PID 2>/dev/null || true
-sleep 1
+# ── Clone ────────────────────────────────────────────────────
+rm -rf $DIR
+git clone -b pm2-deployment $REPO $DIR
 
-if lsof -i :$BACKEND_PORT > /dev/null 2>&1; then
-  echo "❌ Port $BACKEND_PORT still in use. Exiting."
-  exit 1
-fi
-echo "✅ Ports are free"
-
-# ── PROJECT ──────────────────────────────────────────────────
-echo "→ Cloning project..."
-sudo rm -rf $APP_DIR
-sudo mkdir -p $APP_DIR
-sudo chown $USER:$USER $APP_DIR
-git clone $REPO_URL $APP_DIR
-cd $APP_DIR
-
-# ── COLLECT REAL VALUES ──────────────────────────────────────
+# ── Config ───────────────────────────────────────────────────
 echo ""
-echo "══════════════════════════════════════"
-echo " CONFIGURATION — Enter real values"
-echo "══════════════════════════════════════"
-
-read -p "MongoDB Atlas URI: " MONGO_URI
-read -p "Admin username:    " ADMIN_USER
-read -s -p "Admin password:    " ADMIN_PASS
+echo "════════════════════════════════"
+echo "  Configuration"
+echo "════════════════════════════════"
+read -p  "Server IP       [${IP}]: " INPUT_IP
+read -p  "Admin username  [admin]: " ADMIN_USER
+read -sp "Admin password        : " ADMIN_PASS
 echo ""
 
-if [ -z "$MONGO_URI" ]; then
-  echo "❌ MONGO_URI cannot be empty. Exiting."
-  exit 1
-fi
+SERVER_IP="${INPUT_IP:-$IP}"
+ADMIN_USER="${ADMIN_USER:-admin}"
+JWT=$(node -e "console.log(require('crypto').randomBytes(48).toString('hex'))")
 
-# ── TEST DB BEFORE CONTINUING ────────────────────────────────
-echo "→ Testing MongoDB connection..."
-cd $APP_DIR/backend
-npm install --omit=dev --silent
-
-node -e "
-const m = require('mongoose');
-m.connect('$MONGO_URI')
- .then(() => { console.log('✅ MongoDB connected'); process.exit(0); })
- .catch(e => { console.log('❌ MongoDB failed:', e.message); process.exit(1); });
-" || {
-  echo ""
-  echo "❌ MongoDB connection failed."
-  echo "   Fix your Atlas URI or whitelist your IP, then re-run."
-  exit 1
-}
-
-# ── ENV FILES ────────────────────────────────────────────────
-echo "→ Writing .env files..."
-
-JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
-
-cat > $APP_DIR/backend/.env <<EOF
-PORT=$BACKEND_PORT
-MONGO_URI=$MONGO_URI
-JWT_SECRET=$JWT_SECRET
+# ── .env files ───────────────────────────────────────────────
+cat > $DIR/backend/.env <<EOF
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/devops-academy
+JWT_SECRET=$JWT
 NODE_ENV=production
-CLIENT_URL=http://$SERVER_IP:$FRONTEND_PORT
+CLIENT_URL=http://$SERVER_IP:4173
 ADMIN_USERNAME=$ADMIN_USER
 ADMIN_PASSWORD=$ADMIN_PASS
 EOF
 
-cat > $APP_DIR/frontend/.env <<EOF
-VITE_API_URL=http://$SERVER_IP:$BACKEND_PORT/api
+cat > $DIR/frontend/.env <<EOF
+VITE_API_URL=http://$SERVER_IP:5000/api
 EOF
 
-chmod 600 $APP_DIR/backend/.env
-chmod 600 $APP_DIR/frontend/.env
+chmod 600 $DIR/backend/.env $DIR/frontend/.env
 
-# ── SEED ─────────────────────────────────────────────────────
-echo "→ Seeding admin user..."
-cd $APP_DIR/backend
-node seed.js && echo "✅ Admin seeded" || echo "⚠️  Seed skipped (may already exist)"
+# ── Test DB ──────────────────────────────────────────────────
+cd $DIR/backend && npm install --omit=dev
+node -e "
+require('dotenv').config();
+require('mongoose').connect(process.env.MONGO_URI)
+  .then(() => { console.log('✅ MongoDB OK'); process.exit(0); })
+  .catch(e => { console.log('❌', e.message); process.exit(1); });
+" || { echo "❌ MongoDB connection failed"; exit 1; }
 
-# ── START BACKEND ────────────────────────────────────────────
-echo "→ Starting backend with PM2..."
-pm2 start server.js --name devops-backend
-sleep 3
+# ── Seed ─────────────────────────────────────────────────────
+node seed.js
 
-if ! pm2 list | grep -q "devops-backend.*online"; then
-  echo "❌ Backend failed to start."
-  pm2 logs devops-backend --lines 20 --nostream
-  exit 1
-fi
-echo "✅ Backend running"
+# ── Frontend build ───────────────────────────────────────────
+cd $DIR/frontend && npm install && npm run build
 
-# ── BUILD + SERVE FRONTEND ───────────────────────────────────
-echo "→ Installing frontend dependencies..."
-cd $APP_DIR/frontend
-npm install --silent
-
-echo "→ Building frontend..."
-npm run build
-
-echo "→ Serving frontend with PM2..."
-pm2 serve dist $FRONTEND_PORT --name devops-frontend --spa
-sleep 2
-echo "✅ Frontend running"
-
-# ── PM2 STARTUP ──────────────────────────────────────────────
-echo "→ Saving PM2 config..."
+# ── PM2 ──────────────────────────────────────────────────────
+pm2 delete all 2>/dev/null || true
+pm2 start $DIR/backend/server.js --name devops-backend --cwd $DIR/backend
+pm2 serve $DIR/frontend/dist 4173 --name devops-frontend --spa
 pm2 save
-pm2 startup systemd -u $USER --hp $HOME 2>/dev/null | grep "sudo" | bash || true
+pm2 startup systemd 2>/dev/null | grep "sudo\|systemctl" | bash || true
 pm2 save
 
-# ── FIREWALL ─────────────────────────────────────────────────
-echo "→ Configuring firewall..."
-sudo ufw allow 22
-sudo ufw allow $FRONTEND_PORT
-sudo ufw allow $BACKEND_PORT
-sudo ufw --force enable
+# ── Firewall ─────────────────────────────────────────────────
+ufw allow 22 && ufw allow 4173 && ufw allow 5000 && ufw --force enable
 
-# ── FINAL VERIFY ─────────────────────────────────────────────
+# ── Done ─────────────────────────────────────────────────────
 echo ""
-echo "→ Running verification..."
-sleep 2
-
-curl -sf http://localhost:$BACKEND_PORT/api/health \
-  && echo "✅ Backend API OK" \
-  || echo "❌ Backend API failed — run: pm2 logs devops-backend"
-
-REG_TEST=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST http://localhost:$BACKEND_PORT/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"HealthCheck","email":"hc@hc.com","password":"123456","studentId":"HC-001"}')
-
-if [ "$REG_TEST" = "201" ] || [ "$REG_TEST" = "409" ]; then
-  echo "✅ Registration endpoint OK (HTTP $REG_TEST)"
-else
-  echo "❌ Registration returned HTTP $REG_TEST"
-  echo "   Run: pm2 logs devops-backend --lines 30"
-fi
-
-pm2 list
-
-# ── DONE ─────────────────────────────────────────────────────
+echo "✅ Deployment complete"
+echo "──────────────────────────────────────"
+echo "  Frontend  →  http://$SERVER_IP:4173"
+echo "  API       →  http://$SERVER_IP:5000/api/health"
+echo "  Login     →  http://$SERVER_IP:4173/login"
+echo "  Admin     →  http://$SERVER_IP:4173/adminlogin"
 echo ""
-echo "✅ Deployment complete (WITHOUT Nginx)"
-echo "─────────────────────────────────────────────"
-echo "Frontend   →  http://$SERVER_IP:$FRONTEND_PORT"
-echo "Backend    →  http://$SERVER_IP:$BACKEND_PORT/api/health"
-echo "PM2 logs   →  pm2 logs devops-backend"
-echo "PM2 status →  pm2 list"
+echo "  pm2 list                                 → status"
+echo "  pm2 logs devops-backend                  → logs"
+echo "  pm2 restart devops-backend --update-env  → after .env change"
