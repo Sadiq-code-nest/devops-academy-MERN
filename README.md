@@ -9,7 +9,7 @@ A full-stack DevOps course platform built with MongoDB, Express, React, and Node
 ### Automated (Recommended)
 
 ```bash
-wget https://raw.githubusercontent.com/Sadiq-code-nest/devops-academy-MERN/pm2-deployment/manual_deploy.sh
+wget -O manual_deploy.sh https://raw.githubusercontent.com/Sadiq-code-nest/devops-academy-MERN/pm2-deployment/manual_deploy.sh
 chmod +x manual_deploy.sh
 sudo ./manual_deploy.sh
 ```
