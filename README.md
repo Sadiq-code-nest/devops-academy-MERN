@@ -2,8 +2,6 @@
 
 A full-stack DevOps course platform built with MongoDB, Express, React, and Node.js.
 
-**Live:** [devops-academy.com](http://65.2.130.110:4173) &nbsp;|&nbsp; **Branch:** `pm2-deployment`
-
 ---
 
 ## Quick Deploy — Ubuntu Server
