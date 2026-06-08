@@ -18,9 +18,12 @@ A simple DevOps Academy project built with the MERN stack. This project demonstr
 
 ---
 
-## ⚙️ Development Server
+## ⚙️ Deploy manually
 
 ```bash
+git clone -b static-deploy \
+  https://github.com/Sadiq-code-nest/devops-academy-MERN.git
+cd devops-academy-MERN
 npx serve .
 # → http://localhost:3000
 ```
