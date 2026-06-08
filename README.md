@@ -21,31 +21,18 @@ A simple DevOps Academy project built with the MERN stack. This project demonstr
 ## ⚙️ Development Server
 
 ```bash
-npm install
-npm start
+npx serve .
+# → http://localhost:3000
 ```
-
-Runs the app in development mode.
-Open http://localhost:3000 in your browser.
-
 ---
 
-## 🏗️ Production Build
+## 🏗️ Quick Deployment — Ubuntu Server
 
 ```bash
-npm run build
+wget https://raw.githubusercontent.com/Sadiq-code-nest/devops-academy-MERN/static-deploy/static_deploy.sh
+chmod +x static_deploy.sh
+./static_deploy.sh
 ```
-
-Builds the app for production and optimizes performance.
-
----
-
-## Available Scripts
-
-* `npm start` → Run development server
-* `npm test` → Run tests
-* `npm run build` → Build for production
-
 ---
 
 ## 🛠️ Technologies Used
