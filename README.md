@@ -25,22 +25,31 @@ wget https://raw.githubusercontent.com/Sadiq-code-nest/devops-academy-MERN/stati
 chmod +x static_deploy.sh
 ./static_deploy.sh
 ```
----
-## ⚙️ Deploy manually
+## ⚙️ Manual Deployment
+
+To run this project manually on your local machine:
 
 ```bash
-Step 1 — Install Node.js & Git
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs git
-Step 2 — Clone the Project
-git clone -b static-deploy \
-  https://github.com/Sadiq-code-nest/devops-academy-MERN.git
-cd devops-academy-MERN
-Step 3 — Serve the Files
 npx serve .
-# → http://localhost:3000
 ```
+
 ---
+
+### Prerequisites
+
+Make sure the following are installed on your system:
+
+* Node.js
+* Git
+
+---
+
+### 🌐 Access the App
+
+After running the command, open your browser and go to:
+
+http://localhost:3000
+
 
 ## 🛠️ Technologies Used
 
