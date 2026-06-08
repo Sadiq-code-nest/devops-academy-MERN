@@ -11,7 +11,7 @@ A simple DevOps Academy project built with the MERN stack. This project demonstr
 
 ---
 
-## 🌿 Repository
+## Repository
 
 * **GitHub:** https://github.com/Sadiq-code-nest/devops-academy-MERN.git
 * **Branch:** `static-deploy`
@@ -40,7 +40,7 @@ Builds the app for production and optimizes performance.
 
 ---
 
-## 📦 Available Scripts
+## Available Scripts
 
 * `npm start` → Run development server
 * `npm test` → Run tests
