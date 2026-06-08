@@ -27,7 +27,20 @@ chmod +x static_deploy.sh
 ```
 ## ⚙️ Manual Deployment
 
-To run this project manually on your local machine:
+Follow the steps below to run the project locally:
+
+---
+
+### 📥 Clone the Repository
+
+```bash
+git clone -b static-deploy https://github.com/Sadiq-code-nest/devops-academy-MERN.git
+cd devops-academy-MERN
+```
+
+---
+
+### ▶️ Run the Application
 
 ```bash
 npx serve .
