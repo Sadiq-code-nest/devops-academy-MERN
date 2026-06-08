@@ -1,4 +1,4 @@
-# DevOps Academy (MERN)
+# DevOps Academy
 
 A simple DevOps Academy project built with the MERN stack. This project demonstrates basic deployment practices using modern hosting platforms like Vercel and Netlify.
 
@@ -53,8 +53,6 @@ Builds the app for production and optimizes performance.
 * React (MERN Stack)
 * Node.js
 * Express.js
-* MongoDB
-
 ---
 
 ## 🌐 Deployment
