@@ -55,13 +55,6 @@ Builds the app for production and optimizes performance.
 * Express.js
 ---
 
-## 🌐 Deployment
-
-This project is deployed using:
-
-* Vercel
-* Netlify
-
 ---
 
 ## 📌 Notes
