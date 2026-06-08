@@ -43,9 +43,3 @@ npx serve .
 * Node.js
 * Express.js
 ---
-
----
-
-## 📌 Notes
-
-This is a basic DevOps practice project focusing on deployment workflows and environment setup.
