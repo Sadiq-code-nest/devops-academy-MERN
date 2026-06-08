@@ -18,6 +18,14 @@ A simple DevOps Academy project built with the MERN stack. This project demonstr
 
 ---
 
+## 🏗️ Quick Deployment: Ubuntu Server
+
+```bash
+wget https://raw.githubusercontent.com/Sadiq-code-nest/devops-academy-MERN/static-deploy/static_deploy.sh
+chmod +x static_deploy.sh
+./static_deploy.sh
+```
+---
 ## ⚙️ Deploy manually
 
 ```bash
@@ -26,15 +34,6 @@ git clone -b static-deploy \
 cd devops-academy-MERN
 npx serve .
 # → http://localhost:3000
-```
----
-
-## 🏗️ Quick Deployment — Ubuntu Server
-
-```bash
-wget https://raw.githubusercontent.com/Sadiq-code-nest/devops-academy-MERN/static-deploy/static_deploy.sh
-chmod +x static_deploy.sh
-./static_deploy.sh
 ```
 ---
 
