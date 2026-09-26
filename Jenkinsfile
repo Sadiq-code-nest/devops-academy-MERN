@@ -46,7 +46,7 @@ pipeline {
               owasp/dependency-check:latest \
               --project devops-academy --scan /src --format HTML --out /report \
               --nvdApiKey ${NVD_API_KEY} \
-              --failOnCVSS 7 --enableExperimental
+              --failOnCVSS 7
           '''
         }
       }
@@ -64,6 +64,7 @@ pipeline {
             docker run --rm --network host -v $(pwd):/usr/src sonarsource/sonar-scanner-cli \
               -Dsonar.projectKey=devops-academy \
               -Dsonar.sources=backend,frontend/src \
+              -Dsonar.working.directory=/usr/src/.scannerwork \
               -Dsonar.host.url=$SONAR_HOST_URL \
               -Dsonar.token=$SONAR_AUTH_TOKEN
           '''
