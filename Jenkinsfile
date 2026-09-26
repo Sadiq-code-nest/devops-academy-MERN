@@ -7,15 +7,12 @@ pipeline {
   }
 
   environment {
+    COMPOSE_PROJECT_NAME = 'devops-academy'
     MONGO_ROOT_USER     = credentials('mongo-root-user')
     MONGO_ROOT_PASSWORD = credentials('mongo-root-password')
     JWT_SECRET          = credentials('jwt-secret')
     ADMIN_USERNAME      = credentials('admin-username')
     ADMIN_PASSWORD      = credentials('admin-password')
-    SMTP_HOST           = credentials('smtp-host')
-    SMTP_PORT           = credentials('smtp-port')
-    SMTP_USER           = credentials('smtp-user')
-    SMTP_PASS           = credentials('smtp-pass')
     PUBLIC_URL          = credentials('public-url')
   }
 
