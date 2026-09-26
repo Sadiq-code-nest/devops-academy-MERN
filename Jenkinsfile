@@ -61,7 +61,7 @@ pipeline {
       steps {
         withSonarQubeEnv('SonarQube') {
           sh '''
-            docker run --rm -v $(pwd):/usr/src sonarsource/sonar-scanner-cli \
+            docker run --rm --network host -v $(pwd):/usr/src sonarsource/sonar-scanner-cli \
               -Dsonar.projectKey=devops-academy \
               -Dsonar.sources=backend,frontend/src \
               -Dsonar.host.url=$SONAR_HOST_URL \
