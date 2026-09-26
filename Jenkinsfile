@@ -40,6 +40,7 @@ pipeline {
           sh '''
             mkdir -p reports
             docker run --rm \
+              --user $(id -u):$(id -g) \
               -v $(pwd):/src \
               -v dependency-check-data:/usr/share/dependency-check/data \
               -v $(pwd)/reports:/report \
@@ -61,7 +62,7 @@ pipeline {
       steps {
         withSonarQubeEnv('SonarQube') {
           sh '''
-            docker run --rm --network host -v $(pwd):/usr/src sonarsource/sonar-scanner-cli \
+            docker run --rm --network host --user $(id -u):$(id -g) -v $(pwd):/usr/src sonarsource/sonar-scanner-cli \
               -Dsonar.projectKey=devops-academy \
               -Dsonar.sources=backend,frontend/src \
               -Dsonar.working.directory=/usr/src/.scannerwork \
