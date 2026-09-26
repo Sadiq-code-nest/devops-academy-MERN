@@ -14,6 +14,7 @@ pipeline {
     ADMIN_USERNAME      = credentials('admin-username')
     ADMIN_PASSWORD      = credentials('admin-password')
     PUBLIC_URL          = credentials('public-url')
+    NVD_API_KEY         = credentials('nvd-api-key')
   }
 
   stages {
@@ -35,16 +36,19 @@ pipeline {
 
     stage('Stage 2: OWASP Dependency-Check') {
       steps {
-        sh '''
-          mkdir -p reports
-          docker run --rm \
-            -v $(pwd):/src \
-            -v dependency-check-data:/usr/share/dependency-check/data \
-            -v $(pwd)/reports:/report \
-            owasp/dependency-check:latest \
-            --project devops-academy --scan /src --format HTML --out /report \
-            --failOnCVSS 7 --enableExperimental
-        '''
+        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+          sh '''
+            mkdir -p reports
+            docker run --rm \
+              -v $(pwd):/src \
+              -v dependency-check-data:/usr/share/dependency-check/data \
+              -v $(pwd)/reports:/report \
+              owasp/dependency-check:latest \
+              --project devops-academy --scan /src --format HTML --out /report \
+              --nvdApiKey ${NVD_API_KEY} \
+              --failOnCVSS 7 --enableExperimental
+          '''
+        }
       }
       post {
         always {
